@@ -1,0 +1,10 @@
+{
+    "version": "0.1.0",
+    "description": "Native ",
+    "license": "MIT",
+    "main": "index.js",
+    "repository": "gist:",
+    "dependencies": {
+        "nan": "^2.14.2"
+    }
+}

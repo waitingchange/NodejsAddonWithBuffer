@@ -5,7 +5,6 @@
 #include <nan.h>
 #include <uv.h>
 #include <iostream>
-#include <unistd.h>
 #include <string>
 #include "Timer.h"
 // 解决生产者消费者模型 线程安全的队列
@@ -39,6 +38,7 @@ struct MyCallbackData
     char * data;
 };
 
+void async_on_callback(uv_async_t *handle);
 
 class MyBuffer : public node::ObjectWrap
 {
@@ -46,11 +46,10 @@ public:
     static void Init(v8::Local<v8::Object> exports);
     // libuv 用于异步回调 跨线程
     static void setCallback(const Nan::FunctionCallbackInfo<v8::Value> &info);
-    Nan::Persistent<v8::Function> m_callback;
-    static void async_on_callback(uv_async_t *handle);
-    uv_async_t m_callback_async;
+
+    uv_async_t m_callback_async;         // 保存线程任务的
+    Nan::Persistent<v8::Function> callback; // 保存回调函数的
     // libuv end
-    
 
     // 主动方式 传递buffer 和获取buffer
     static void getNewBuffer(const Nan::FunctionCallbackInfo<v8::Value> &info);
@@ -63,18 +62,18 @@ public:
 
 
     static MyBuffer *getInstance();
+
+    int m_counter;
+    
 private:
     static MyBuffer *m_instance;
-
-    // 测试使用，新增timer ， 目的是在C++ 内部异步发送数据，并且回调给JavaScript 主线程
-    Timer *m_timer;
     
     explicit MyBuffer();
     ~MyBuffer();
     static void New(const Nan::FunctionCallbackInfo<v8::Value> &info);
     static Nan::Persistent<v8::Function> constructor;
 
-    int m_counter;
+    
 };
 
 

@@ -1,0 +1,72 @@
+{
+  // 使用 IntelliSense 了解相关属性。
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "node:attach",
+      "port": 9229,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "lldb:node",
+      "program": "node",
+      "args": ["--inspect-brk", "--expose-gc","main.js"],
+      "cwd": "${workspaceFolder}",
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Windows launch",
+      "console": "integratedTerminal",
+      "program": "${workspaceFolder}/main.js",
+      "preLaunchTask": "npm: build:dev"
+    },
+    {
+      "name": "Windows Attach",
+      "type": "cppvsdbg",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "lldb",
+      "program": "${fileDirname}/${fileBasenameNoExtension}",
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "node",
+      "program": "${fileDirname}",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "pwa-node"
+    },
+    {
+      "name": "cppdbg",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${fileDirname}/${fileBasenameNoExtension}",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Mac Debug",
+      "configurations": ["lldb:node","node:attach"]
+    }
+  ]
+}

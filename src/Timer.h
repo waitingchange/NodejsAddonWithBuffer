@@ -1,91 +1,58 @@
 //
-//  Timer.h
-//  vipthink
+//  MTimer.h
+//  MacInterfaceDemo
 //
-//  Created by MacBook Pro on 1/29/21.
+//  Created by MacBook Pro on 11/18/20.
 //
 
-#ifndef TIMER_H_
-#define TIMER_H_
-#include<functional>
-#include<chrono>
-#include<thread>
-#include<atomic>
-#include<memory>
-#include<mutex>
-#include<condition_variable>
-class Timer{
+#ifndef MTimer_h
+#define MTimer_h
+
+#include <iostream>
+#include <thread>
+#include <chrono>
+#include <iostream>
+#include <thread>
+#include <chrono>
+
+class MTimer {
+    bool clear = false;
+
 public:
-    Timer() :expired_(true), try_to_expire_(false){
-    }
- 
-    Timer(const Timer& t){
-        expired_ = t.expired_.load();
-        try_to_expire_ = t.try_to_expire_.load();
-    }
-    ~Timer(){
-        Expire();
-    }
- 
-    void StartTimer(int interval, std::function<void()> task){
-        if (expired_ == false){
-            return;
-        }
-        expired_ = false;
-        std::thread([this, interval, task](){
-            while (!try_to_expire_){
-                std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-                task();
-            }
-            {
-                std::lock_guard<std::mutex> locker(mutex_);
-                expired_ = true;
-                expired_cond_.notify_one();
-            }
-        }).detach();
-    }
- 
-    void Expire(){
-        if (expired_){
-            return;
-        }
- 
-        if (try_to_expire_){
-            return;
-        }
-        try_to_expire_ = true;
-        {
-            std::unique_lock<std::mutex> locker(mutex_);
-            expired_cond_.wait(locker, [this]{return expired_ == true; });
-            if (expired_ == true){
-                try_to_expire_ = false;
-            }
-        }
-    }
- 
-    template<typename callable, class... arguments>
-    void SyncWait(int after, callable&& f, arguments&&... args){
- 
-        std::function<typename std::result_of<callable(arguments...)>::type()> task
-            (std::bind(std::forward<callable>(f), std::forward<arguments>(args)...));
-        std::this_thread::sleep_for(std::chrono::milliseconds(after));
-        task();
-    }
-    template<typename callable, class... arguments>
-    void AsyncWait(int after, callable&& f, arguments&&... args){
-        std::function<typename std::result_of<callable(arguments...)>::type()> task
-            (std::bind(std::forward<callable>(f), std::forward<arguments>(args)...));
- 
-        std::thread([after, task](){
-            std::this_thread::sleep_for(std::chrono::milliseconds(after));
-            task();
-        }).detach();
-    }
- 
-private:
-    std::atomic<bool> expired_;
-    std::atomic<bool> try_to_expire_;
-    std::mutex mutex_;
-    std::condition_variable expired_cond_;
+    template<typename T>
+    void setTimeout(T function, int delay);
+    template<typename T>
+    void setInterval(T function, int interval);
+    void stop();
+
 };
-#endif
+
+template<typename T>
+void MTimer::setTimeout(T function, int delay) {
+    this->clear = false;
+    std::thread t([=]() {
+        if (this->clear) return;
+        std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+        if (this->clear) return;
+        function();
+    });
+    t.detach();
+}
+
+template<typename T>
+void MTimer::setInterval(T function, int interval) {
+    this->clear = false;
+    std::thread t([=]() {
+        while (true) {
+            if (this->clear) return;
+            std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+            if (this->clear) return;
+            function();
+        }
+    });
+    t.detach();
+}
+
+
+
+#endif /* MTimer_h */

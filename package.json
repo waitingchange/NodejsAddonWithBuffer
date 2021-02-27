@@ -3,6 +3,15 @@
     "description": "Native ",
     "license": "MIT",
     "main": "index.js",
+    "scripts": {
+        "install": "node-gyp clean configure --debug && node-gyp -j 16 build --debug",
+        "start": "node main.js",
+        "build:dev": "node-gyp configure --debug && node-gyp -j 16 build --debug",
+        "build": "node-gyp -j 16 build",
+        "rebuild:dev": "node-gyp -j 16 rebuild --debug",
+        "rebuild": "node-gyp -j 16 rebuild",
+        "clean": "node-gyp clean"
+    },
     "repository": "gist:",
     "dependencies": {
         "nan": "^2.14.2"
